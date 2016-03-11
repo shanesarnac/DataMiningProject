@@ -1,18 +1,33 @@
+# Author: Shane Sarnac
+# Date: March 2016
+# The goal of this code is to find trends in the pitching data from the 2015 release of the 
+# Lahman Database
+
+
+# Find the age that a player was for the year in question. The adopted convention for this
+# project is that if a player's birthday occured before July, the player's season age is his
+# birth age. If a player's birthday occured in July or after, the player's season age is one
+# year younger than his birth age. 
 findSeasonAge = function(season_year, birth_year, birth_month) {
   effective_birth_year = ifelse(birth_month < 7, birth_year, birth_year - 1) 
   age = season_year - effective_birth_year
   return (age)
 }
 
+# Uses the Teams class to determine how many strikeouts were thrown each year from a start year
+# through 2015
 findTotalStrikeouts = function(start_year) {
   total = sum(teams$SOA[which(teams$yearID == start_year)])
-  for (i in (start_year+1):2014) {
+  for (i in (start_year+1):2015) {
     total = c(total,sum(teams$SOA[which(teams$yearID == i)]))
   }
   #print(total)
   return (total)
 }
 
+
+# Uses the Teams class to determine the total number of earned runs given up each year, starting
+# at a given base year and ending at a given end year. 
 findTotalOpponentEarnedRuns = function(start_year, end_year) {
   total = sum(teams$RA[which(teams$yearID == start_year)])
   for (i in (start_year+1):end_year) {
@@ -22,6 +37,8 @@ findTotalOpponentEarnedRuns = function(start_year, end_year) {
   return (total)
 }
 
+# Determines the total number of strikeouts that players of a given age produced per year, 
+# starting and ending at given years
 findTotalStrikeoutsAge = function(start_year, end_year, effective_age) {
   total = sum(pitchers$SO[which(pitchers$effective_age[which(pitchers$yearID == start_year)
                                                        ] == effective_age)])
@@ -32,6 +49,9 @@ findTotalStrikeoutsAge = function(start_year, end_year, effective_age) {
   return (total)
 }
 
+
+# Determines the average number of strikeouts thrown by pitchers of a given age each year, 
+# given a range of years.
 findAverageStrikeoutsAge = function(start_year, end_year, effective_age) {
   total = mean(pitchers$SO[which(pitchers$effective_age[which(pitchers$yearID == start_year)
                                                        ] == effective_age)])
@@ -42,6 +62,8 @@ findAverageStrikeoutsAge = function(start_year, end_year, effective_age) {
   return (total)
 }
 
+# Determines the average number of strikeouts thrown by pitchers of a given age each year, 
+# given a range of years and a minimum threshold for number of innings thrown. 
 findAverageStrikeoutsAge = function(start_year, end_year, effective_age, min_innings) {
   pitchers_in_year = which(pitchers$yearID == start_year)
   pitchers_at_age = which(pitchers$effective_age[pitchers_in_year] == effective_age)
@@ -58,8 +80,8 @@ findAverageStrikeoutsAge = function(start_year, end_year, effective_age, min_inn
 
 # Read in data from the Pitching, Team, and  Master csv files from Lahmann database
 pitchers = read.csv(file = 'Baseball/Pitching.csv', header = TRUE)
-teams = read.csv(file = '~/Documents/Baseball/Teams.csv', header = TRUE)
-master = read.csv(file = '~/Documents/Baseball/Master.csv', header = TRUE)
+teams = read.csv(file = 'Baseball/Teams.csv', header = TRUE)
+master = read.csv(file = 'Baseball/Master.csv', header = TRUE)
 
 # Find where all pitchers are listed in the Master csv file
 pitcher_indices_in_master = match(pitchers$playerID, master$playerID)
