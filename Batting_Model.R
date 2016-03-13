@@ -35,5 +35,9 @@ batters$AVE = batters$H / batters$AB
 # ISO = Isolated Power
 batters$ISO = batters$SLG - batters$AVE
 
+# OPS = On base Plus Slugging
+batters$OPS = batters$SLG + batters$OBP
+
 ############################################################################################
 
+which(batters$yearID > 1990)

@@ -118,3 +118,4 @@ plot(x = 1950:2014, y = findAverageStrikeoutsAge(1950, 2014, 27, 150))
 
 findAverageStrikeoutsAge(2000, 2014, 26,150)
 
+pitchers1990 = which(pitchers$yearID > 1990)
