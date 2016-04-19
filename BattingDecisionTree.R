@@ -8,18 +8,19 @@ findCommonPlayers = function(year1, year2) {
   wanted_players = NULL
   print(length(players_year1))
   print(length(players_year2))
+  previous_player = ""
   
   for(player_yr1 in batters$playerID[players_year1]) {
     for(player_yr2 in batters$playerID[players_year2]) {
-#       player_count = length(which(batters$playerID[wanted_players] == player_yr1))
-#       print(batters$playerID[wanted_players])
-#       print(player_count)
-      if(player_yr1 == player_yr2) {
-        wanted_players = c(wanted_players, which(batters$playerID == player_yr1 & batters$yearID == year1 & batters$AB > 0))
+      if(player_yr1 == player_yr2 & player_yr1 != previous_player) {
+         print(paste("player_yr1 =", player_yr1))
+         print(paste("previous player =", previous_player))
+         print("")
+        wanted_players = c(wanted_players, which(batters$playerID == player_yr1 & batters$yearID == year1 & batters$AB > 0 & batters$stint == 1))
         break
       }
     }
-    print(player_yr1)
+    previous_player = player_yr1
   }
   return(batters[wanted_players,])
 }
@@ -72,6 +73,8 @@ standardizeYear = function(wanted_players, year) {
   standardized_players = NULL
   for (player in wanted_players$playerID) {
     player_locations = which(batters$playerID == player & batters$yearID == year)
+    print(player)
+    print(length(player_locations))
     if(length(player_locations) > 1) {
       temp_holder = NULL
       for (i in player_locations) {
@@ -97,34 +100,12 @@ year2 = 2006
 
 # Find all players that played in both year1 and year2; returns all year1 statistics
 training_set = findCommonPlayers(year1, year2)
+training_set = standardizeYear(training_set, year1)
 
 
 
 
-year1 = 2005
-year2 = 2006
-players_year1 = which(batters$yearID == year1)
-players_year2 = which(batters$yearID == year2)
 
-wanted_players = NULL
-print(length(players_year1))
-print(length(players_year2))
 
-for(player_yr1 in batters$playerID[players_year1]) {
-  for(player_yr2 in batters$playerID[players_year2]) {
-    if(player_yr1 == player_yr2) {
-      wanted_players = c(wanted_players, which(batters$playerID == player_yr1 & batters$yearID == 2005))
-      break
-    }
-  }
-  #print(player_yr1)
-}
-next_year_OPS = NULL
-common_players = NULL
-for(player in batters$playerID[wanted_players]) {
-  common_players = c(common_players, which(batters$playerID == player & batters$yearID == 2006))
-}
-
-players_2006 = which(batters$yearID == 2006)
 
 
