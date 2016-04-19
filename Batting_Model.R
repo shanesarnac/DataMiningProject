@@ -35,5 +35,8 @@ batters$AVE = batters$H / batters$AB
 # ISO = Isolated Power
 batters$ISO = batters$SLG - batters$AVE
 
+# OPS = On Base Percentage + Slugging Percentage
+batters$OPS = batters$OBP + batters$SLG
+
 ############################################################################################
 
