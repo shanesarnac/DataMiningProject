@@ -142,8 +142,5 @@ training_set$year2OPS = as.numeric(year2_players$OPS)
 training_set$year2G = as.numeric(year2_players$G)
 training_set$year2AB = as.numeric(year2_players$AB)
 
-tree = rpart(year2OPS ~ effective_age + OPS + G + AB + BABIP + SO + OBP + SLG, data = training_set, method = "anova")
-
-rpart.plot(tree)
-printcp(tree)
-prp(tree, faclen = 0, extra = 1, main = "Average OPS in Year 2")
+tree = rpart(year2G ~ effective_age + OPS + G + AB + BABIP + SO + OBP + SLG, data = training_set, method = "anova")
+prp(tree, faclen = 0, extra = 1, main = "Average Games Played in Year 2")
