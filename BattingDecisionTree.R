@@ -25,7 +25,30 @@ findCommonPlayers = function(year1, year2) {
   return(batters[wanted_players,])
 }
 
-combinePlayerStats = function(player) {
+findCommonPlayers = function(year1, year2, data) {
+  players_year1 = which(data$yearID == year1)
+  players_year2 = which(data$yearID == year2)
+  wanted_players = NULL
+  print(length(players_year1))
+  print(length(players_year2))
+  previous_player = ""
+  
+  for(player_yr1 in data$playerID[players_year1]) {
+    for(player_yr2 in data$playerID[players_year2]) {
+      if(player_yr1 == player_yr2 & player_yr1 != previous_player) {
+        print(paste("player_yr1 =", player_yr1))
+        print(paste("previous player =", previous_player))
+        print("")
+        wanted_players = c(wanted_players, which(data$playerID == player_yr1 & data$yearID == year1 & data$stint == 1))
+        break
+      }
+    }
+    previous_player = player_yr1
+  }
+  return(data[wanted_players,])
+}
+
+combinePlayerStatsHitter = function(player) {
   #print(player)
   combined_player = NULL
   combined_player$playerID = NA
@@ -68,7 +91,7 @@ combinePlayerStats = function(player) {
   return (combined_player)
 }
 
-standardizeYear = function(wanted_players, year) {
+standardizeYearHitter = function(wanted_players, year) {
   player_locations = NULL
   standardized_players = NULL
   for (player in wanted_players$playerID) {
@@ -80,7 +103,7 @@ standardizeYear = function(wanted_players, year) {
       for (i in player_locations) {
         temp_holder = rbind(temp_holder, batters[i,])
       }
-      standardized_players = rbind(standardized_players, combinePlayerStats(temp_holder))
+      standardized_players = rbind(standardized_players, combinePlayerStatsHitter(temp_holder))
     }
     else {
       standardized_players = rbind(standardized_players, batters[player_locations,])
@@ -108,11 +131,11 @@ year2 = 2006
 
 # Find all players that played in both year1 and year2; returns all year1 statistics
 training_set = findCommonPlayers(year1, year2)
-training_set = standardizeYear(training_set, year1)
+training_set = standardizeYearHitter(training_set, year1)
 
 # Find corresponding players in year 2 and standardize
 year2_players = findCommonPlayers(year2, year1)
-year2_players = standardizeYear(year2_players, year2)
+year2_players = standardizeYearHitter(year2_players, year2)
 
 # append information
 training_set$year2OPS = as.numeric(year2_players$OPS)
