@@ -2,6 +2,7 @@
 # April 19, 2016
 # This file aims to make predictions about batters using decision trees
 
+##### Find all common players between year 1 and year 2
 findCommonPlayers = function(year1, year2) {
   players_year1 = which(batters$yearID == year1)
   players_year2 = which(batters$yearID == year2)
@@ -47,7 +48,9 @@ findCommonPlayers = function(year1, year2, data) {
   }
   return(data[wanted_players,])
 }
+##### End Find Common Players
 
+##### Standardize year to account for mid-season trades #####
 combinePlayerStatsHitter = function(player) {
   #print(player)
   combined_player = NULL
@@ -88,6 +91,7 @@ combinePlayerStatsHitter = function(player) {
   combined_player$AVE = combined_player$H / combined_player$AB
   combined_player$ISO = combined_player$SLG - combined_player$AVE
   combined_player$OPS = combined_player$OBP + combined_player$SLG
+  combined_players$effective_age = player$effective_age
   return (combined_player)
 }
 
@@ -111,17 +115,20 @@ standardizeYearHitter = function(wanted_players, year) {
   }
   return (standardized_players)
 }
+##### End Standardize players #####
+
+
 
 # import necessary library for decision trees
 library(rpart)
 
 # import for printing decision trees
-# install.packages('rattle')
-# install.packages('rpart.plot')
-# install.packages('RColorBrewer')
-# library(rattle)
+install.packages('rattle')
+install.packages('rpart.plot')
+install.packages('RColorBrewer')
+library(rattle)
 library(rpart.plot)
-#library(RColorBrewer)
+library(RColorBrewer)
 
 # Remember to read in batter data form Batting_Model.R prior to running this file
 year1_data <- batters[which(batters$yearID == 2005),]
