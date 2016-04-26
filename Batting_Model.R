@@ -38,5 +38,13 @@ batters$ISO = batters$SLG - batters$AVE
 # OPS = On Base Percentage + Slugging Percentage
 batters$OPS = batters$OBP + batters$SLG
 
+# Effective Season age
+batter_indices_in_master = match(batters$playerID, master$playerID)
+batters$effective_age = findSeasonAge(
+  batters$yearID,
+  master$birthYear[batter_indices_in_master],
+  master$birthMonth[batter_indices_in_master]
+)
+
 ############################################################################################
 

@@ -13,9 +13,9 @@ findCommonPlayers = function(year1, year2) {
   for(player_yr1 in batters$playerID[players_year1]) {
     for(player_yr2 in batters$playerID[players_year2]) {
       if(player_yr1 == player_yr2 & player_yr1 != previous_player) {
-         print(paste("player_yr1 =", player_yr1))
-         print(paste("previous player =", previous_player))
-         print("")
+        # print(paste("player_yr1 =", player_yr1))
+        # print(paste("previous player =", previous_player))
+        # print("")
         wanted_players = c(wanted_players, which(batters$playerID == player_yr1 & batters$yearID == year1 & batters$AB > 0 & batters$stint == 1))
         break
       }
@@ -73,8 +73,8 @@ standardizeYear = function(wanted_players, year) {
   standardized_players = NULL
   for (player in wanted_players$playerID) {
     player_locations = which(batters$playerID == player & batters$yearID == year)
-    print(player)
-    print(length(player_locations))
+    #print(player)
+    #print(length(player_locations))
     if(length(player_locations) > 1) {
       temp_holder = NULL
       for (i in player_locations) {
@@ -92,6 +92,14 @@ standardizeYear = function(wanted_players, year) {
 # import necessary library for decision trees
 library(rpart)
 
+# import for printing decision trees
+# install.packages('rattle')
+# install.packages('rpart.plot')
+# install.packages('RColorBrewer')
+# library(rattle)
+library(rpart.plot)
+#library(RColorBrewer)
+
 # Remember to read in batter data form Batting_Model.R prior to running this file
 year1_data <- batters[which(batters$yearID == 2005),]
 
@@ -102,7 +110,17 @@ year2 = 2006
 training_set = findCommonPlayers(year1, year2)
 training_set = standardizeYear(training_set, year1)
 
+# Find corresponding players in year 2 and standardize
+year2_players = findCommonPlayers(year2, year1)
+year2_players = standardizeYear(year2_players, year2)
 
+# append information
+training_set$year2OPS = as.numeric(year2_players$OPS)
+training_set$year2G = as.numeric(year2_players$G)
+training_set$year2AB = as.numeric(year2_players$AB)
 
+tree = rpart(year2OPS ~ effective_age + OPS + G + AB + BABIP + SO + OBP + SLG, data = training_set, method = "anova")
 
-
+rpart.plot(tree)
+printcp(tree)
+prp(tree, faclen = 0, extra = 1, main = "Average OPS in Year 2")
