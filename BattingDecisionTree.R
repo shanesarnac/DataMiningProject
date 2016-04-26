@@ -106,6 +106,3 @@ training_set = standardizeYear(training_set, year1)
 
 
 
-
-
-
