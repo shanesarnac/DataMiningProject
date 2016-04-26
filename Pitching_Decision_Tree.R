@@ -162,5 +162,5 @@ train$command_year2 = as.factor(train$command_year2)
 train$ERA_year2 = pitchers_year2$ERA
 train$IP_year2 = pitchers_year2$IP
 
-tree = rpart(IP_year2 ~ IP + ERA + SO_Percentage + BB_Percentage + W + SO + L + H + GIDP, data = train, method = "anova")
-prp(tree, faclen = 0, extra = 1, main = "Year 2 IP")
+tree = rpart(ERA_year2 ~ IP + ERA + SO_Percentage + BB_Percentage + W + SO + effective_age, data = train, method = "anova")
+prp(tree, faclen = 0, extra = 1, main = "Year 2 ERA")
