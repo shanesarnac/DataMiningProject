@@ -7,8 +7,8 @@ findCommonPlayers = function(year1, year2) {
   players_year1 = which(batters$yearID == year1)
   players_year2 = which(batters$yearID == year2)
   wanted_players = NULL
-  print(length(players_year1))
-  print(length(players_year2))
+#   print(length(players_year1))
+#   print(length(players_year2))
   previous_player = ""
   
   for(player_yr1 in batters$playerID[players_year1]) {
@@ -26,7 +26,7 @@ findCommonPlayers = function(year1, year2) {
   return(batters[wanted_players,])
 }
 
-findCommonPlayers = function(year1, year2, data) {
+#findCommonPlayers = function(year1, year2, data) {
   players_year1 = which(data$yearID == year1)
   players_year2 = which(data$yearID == year2)
   wanted_players = NULL
@@ -91,7 +91,7 @@ combinePlayerStatsHitter = function(player) {
   combined_player$AVE = combined_player$H / combined_player$AB
   combined_player$ISO = combined_player$SLG - combined_player$AVE
   combined_player$OPS = combined_player$OBP + combined_player$SLG
-  combined_players$effective_age = player$effective_age
+  combined_player$Age = player$Age
   return (combined_player)
 }
 
@@ -107,6 +107,9 @@ standardizeYearHitter = function(wanted_players, year) {
       for (i in player_locations) {
         temp_holder = rbind(temp_holder, batters[i,])
       }
+      print(length( combinePlayerStatsHitter(temp_holder)))
+      print(length(standardized_players))
+      print("")
       standardized_players = rbind(standardized_players, combinePlayerStatsHitter(temp_holder))
     }
     else {
@@ -117,16 +120,80 @@ standardizeYearHitter = function(wanted_players, year) {
 }
 ##### End Standardize players #####
 
+##### Evaluate predictions #####
+determine_Predicted_OPS = function(player) {
+#   print(player$OPS)
+  predicted_OPS = 0
+  if (player$OPS[1] < 0.35) {
+    if (player$G[1] >= 34) {
+      predicted_OPS[1] = 0.38
+    }
+    else {
+      predicted_OPS[1] = 0.54
+    }
+  }
+  else {
+    if (player$OBP[1] >= 0.19) {
+      if (player$AB[1] < 630) {
+        if (player$BABIP[1] >= 0.19) {
+          predicted_OPS = 0.6
+        }
+        else {
+          if (player$SO[1] >= 3.5) {
+            predicted_OPS[1] = 0.51
+          }
+          else {
+            predicted_OPS[1] = 1.1
+          }
+        }
+      } # end if for AB < 630
+      else {
+        predicted_OPS = 0.87
+      }
+    }# end if for OBP >= 0.19
+    else{
+      predicted_OPS = 0.92
+    }
+  }
+  return (predicted_OPS)
+}
 
+eval_Predicted_OPS = function(hitters) {
+  error = NULL
+  actual = 0
+  for (player in hitters$playerID) {
+    print(player)
+    min_age = min(hitters$Age[which(hitters$playerID == player)])
+    max_age = max(hitters$Age[which(hitters$playerID == player)])
+    for (age in min_age:(max_age-1)) {
+      year = hitters$yearID[which(hitters$playerID == player & hitters$Age == age)]
+      actual = 0
+      predicted = 0
+#       print(c("PLAYER:",player))
+#       print(c("AGE:", age))
+#       print(c("MIN AGE:", min_age))
+#       print(c("MAX AGE:", max_age))
+#       print(c("YEAR:", year))
+#       print(c("PLAY?", length(year)))
+      
+      if (length(year) > 0) {
+        actual = hitters$OPS[which(hitters$playerID == player & hitters$Age == age + 1 & hitters$Age != max_age)]
+#         print(length(hitters[which(hitters$playerID == player & hitters$Age == age + 1),]))
+#         print(length(hitters$OPS[which(hitters$playerID == player & hitters$Age == age)]))
+        predicted = determine_Predicted_OPS(hitters[which(hitters$playerID == player & hitters$Age == age), ])
+        error = c(error, actual - predicted)
+      }
+    }
+  }
+  return (error)
+}
 
 # import necessary library for decision trees
 library(rpart)
 
 # import for printing decision trees
-install.packages('rattle')
-install.packages('rpart.plot')
-install.packages('RColorBrewer')
-library(rattle)
+# install.packages('rpart.plot')
+# install.packages('RColorBrewer')
 library(rpart.plot)
 library(RColorBrewer)
 
@@ -149,5 +216,11 @@ training_set$year2OPS = as.numeric(year2_players$OPS)
 training_set$year2G = as.numeric(year2_players$G)
 training_set$year2AB = as.numeric(year2_players$AB)
 
-tree = rpart(year2G ~ effective_age + OPS + G + AB + BABIP + SO + OBP + SLG, data = training_set, method = "anova")
-prp(tree, faclen = 0, extra = 1, main = "Average Games Played in Year 2")
+tree = rpart(year2OPS ~ Age + OPS + G + AB + BABIP + SO + OBP + SLG, data = training_set, method = "anova")
+prp(tree, faclen = 0, extra = 1, main = "Average OPS in Year 2")
+
+# Evaluate erro of decision tree
+error = eval_Predicted_OPS(batters[which(batters$yearID > 2000 & batters$AB > 0),])
+error_out = summary(error)
+boxplot(error)
+hist(error, breaks = 500, "error = actual - predicted")

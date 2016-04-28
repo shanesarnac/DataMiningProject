@@ -3,7 +3,16 @@
 # Date: March 11, 2016
 # Summary: This code aims to find trends and develop a model to predict hitters' performances. 
 
-batters = read.csv(file = "Baseball/Batting.csv", header = TRUE)
+findSeasonAge = function(season_year, birth_year, birth_month) {
+  effective_birth_year = ifelse(birth_month < 7, birth_year, birth_year - 1) 
+  age = season_year - effective_birth_year
+  return (age)
+}
+
+pitchers = read.csv(file = 'Baseball/Pitching.csv', header = TRUE)
+batters = read.csv(file = 'Baseball/Batting.csv', header = TRUE)
+teams = read.csv(file = 'Baseball/Teams.csv', header = TRUE)
+master = read.csv(file = 'Baseball/Master.csv', header = TRUE)
 
 ############################################################################################
 # Adding more advanced metrics to data set
@@ -40,7 +49,7 @@ batters$OPS = batters$OBP + batters$SLG
 
 # Effective Season age
 batter_indices_in_master = match(batters$playerID, master$playerID)
-batters$effective_age = findSeasonAge(
+batters$Age = findSeasonAge(
   batters$yearID,
   master$birthYear[batter_indices_in_master],
   master$birthMonth[batter_indices_in_master]
