@@ -3,9 +3,8 @@
 # Date: March 11, 2016
 # Summary: This code aims to find trends and develop a model to predict hitters' performances. 
 
-# Read in data from the Pitching, Team, and  Master csv files from Lahmann database
+# Read in data from the Batting, and  Master csv files from Lahmann database
 batters = read.csv(file = "Baseball/Batting.csv", header = TRUE)
-teams = read.csv(file = 'Baseball/Teams.csv', header = TRUE)
 master = read.csv(file = 'Baseball/Master.csv', header = TRUE)
 
 
@@ -152,10 +151,6 @@ plot(x = startAge:endAge, y = findAverageByAge(batters$OPS, startAge, endAge, 0.
 plot(x = startAge:endAge, y = findAverageByAge(batters$HR, startAge, endAge, 0.96), main = 'HR By Age', xlab = 'Age', ylab = 'Average HR')
 
 
-
-
-mean(AVG[which(batters$AB > 100 & batters$yearID == 1990)], na.rm = TRUE)
-
 #OBP vs SLG
 smoothScatter(x = batters$OBP[batters$AB > minAB], y = batters$SLG[batters$AB > minAB], main = 'OBP vs SLG', xlab = 'OBP', ylab = 'SLG')
 #Positive correlation
@@ -172,40 +167,12 @@ smoothScatter(x = batters$KP[batters$AB > minAB], y = batters$BBP[batters$AB > m
 smoothScatter(x = batters$KP[batters$AB > minAB], y = batters$AVE[batters$AB > minAB], main = 'KP vs AVE', xlab = 'KP', ylab = 'AVE')
 #Small negative correlation
 
-#AVG = batters$H[batters$AB > 0 & batters$yearID > 1999]/batters$AB[batters$AB > 0 && batters$yearID > 1999]
-hist(AVG)
-boxplot(AVG, main = 'Box Plot of Batting Average')
-plot(batters$yearID, AVG)
-cor(batters$H, batters$HR) #not working?
-mean(AVG, na.rm = TRUE)
-betterAVG = AVG[batters$H > 20]
-mean(betterAVG, na.rm = TRUE)
-smoothScatter(batters$yearID[batters$H > 20], betterAVG)
-hist(betterAVG, main = 'Histogram of Batting Average For Players With >20 Hits', xlab = 'Batting Average')
-smoothScatter(batters$AB[batters$H > 20], betterAVG, main = 'Number of At Bats vs Batting Average', xlab = 'Number of At Bats', ylab = 'Batting Average')
-plot(batters$HR[batters$H > 20], betterAVG, main = 'Number of Home Runs vs Batting Average', xlab = 'Number of Home Runs', ylab = 'Batting Average')
-
-SLG = as.numeric(as.character(batters$SLG[batters$AB > 500 && batters$yearID > 1990]))
 OBP = batters$OBP[batters$AB > 500 && batters$yearID > 1990]
-max(SLG, na.rm = TRUE)
-plot(OBP[1], SLG[1])
-
-
-KMeansClustering = function(statx, staty, centerx, centery)
-  {
-  
-}
 
 GetValidData = function(stat)
 {
   return (stat[batters$AB > minAB & batters$yearID >= minYear])
 }
-
-ISO = batters$ISO[batters$AB > minAB & batters$yearID >= minYear]
-newISO = ConvertData(ISO)
-OBP = batters$OBP[batters$AB > minAB & batters$yearID >= minYear]
-newOBP = ConvertData(OBP)
-smoothScatter(ISO, OBP)
 
 ConvertData = function(stat)
 {
@@ -217,13 +184,11 @@ ConvertData = function(stat)
   return(newStat)
 }
 
-centerx = c(min(ISO), mean(ISO), max(ISO))
-centery = c(min(OBP), mean(OBP), max(OBP))
-
-
-KMeansClustering(ISO, OBP, centerx, centery)
-
-A = c(1:100)
+ISO = batters$ISO[batters$AB > minAB & batters$yearID >= minYear]
+newISO = ConvertData(ISO)
+OBP = batters$OBP[batters$AB > minAB & batters$yearID >= minYear]
+newOBP = ConvertData(OBP)
+smoothScatter(ISO, OBP)
 
 ClusterStat = function(mydata, numClusters = 5)
 {
@@ -245,55 +210,6 @@ OPS = GetValidData(batters$OPS)
 clusteredOPS = ClusterStat(OPS, 5)
 plot(clusteredOPS)
 
-clusteredOPS[2]
-
-targetCluster = clusteredOPS
-
-cluster1 = GetCluster(targetCluster, 1)
-cluster2 = GetCluster(targetCluster, 2)
-cluster3 = GetCluster(targetCluster, 3)
-cluster4 = GetCluster(targetCluster, 4)
-cluster5 = GetCluster(targetCluster, 5)
-
-ci1 = GetClusterIndices(targetCluster, 1)
-ci2 = GetClusterIndices(targetCluster, 2)
-ci3 = GetClusterIndices(targetCluster, 3)
-ci4 = GetClusterIndices(targetCluster, 4)
-ci5 = GetClusterIndices(targetCluster, 5)
-targetCluster[ci1,1]
-ci1
-
-age = GetValidData(batters$effective_age)
-
-xvar = SLG
-yvar = OBP
-
-plot(xvar[ci1], yvar[ci1], col = "green", xlim = c(min(xvar), max(xvar)), 
-     ylim = c(min(yvar),max(yvar)), xlab = "SLG", ylab = "OBP", main = "Clustered OPS")
-points(xvar[ci2], yvar[ci2], col = "yellow")
-points(xvar[ci3], yvar[ci3], col = "orange")
-points(xvar[ci4], yvar[ci4], col = "red")
-points(xvar[ci5], yvar[ci5], col = "blue")
-
-
-#Apply poly regression to average OPS by age
-avgCluster1 = findAverageByAgeClustered(OPS[ci1], age[ci1])
-
-#Prediciton method 1
-#You want to cluster for each age, and find average of each cluster,
-#and then run regressions with cluster centers. First regression would be elite cluster center,
-#at each age
-
-findAverageByAgeClustered = function(stat, ages, startAge=20, endAge=40)
-{
-  total = mean(stat[ages == startAge], na.rm = TRUE)
-  for (i in (startAge+1):endAge) 
-  {
-    total = c(total,mean(stat[ages == i], na.rm = TRUE))
-  }
-  return(total)
-}
-
 GetCluster = function(cData, clusterNum)
 {
   newStat = c()
@@ -314,13 +230,48 @@ GetClusterIndices = function(cData, clusterNum)
   return(newStat)
 }
 
-#Prediciton method 2
-#Average OPS for players
-#Cluster players
-#Average change in OPS for each age for the different clusters
-#or fit polynomial to age for each cluster
 
-master$playerID
+targetCluster = clusteredOPS
+
+cluster1 = GetCluster(targetCluster, 1)
+cluster2 = GetCluster(targetCluster, 2)
+cluster3 = GetCluster(targetCluster, 3)
+cluster4 = GetCluster(targetCluster, 4)
+cluster5 = GetCluster(targetCluster, 5)
+
+ci1 = GetClusterIndices(targetCluster, 1)
+ci2 = GetClusterIndices(targetCluster, 2)
+ci3 = GetClusterIndices(targetCluster, 3)
+ci4 = GetClusterIndices(targetCluster, 4)
+ci5 = GetClusterIndices(targetCluster, 5)
+targetCluster[ci1,1]
+
+age = GetValidData(batters$effective_age)
+
+xvar = SLG
+yvar = OBP
+
+plot(xvar[ci1], yvar[ci1], col = "green", xlim = c(min(xvar), max(xvar)), 
+     ylim = c(min(yvar),max(yvar)), xlab = "SLG", ylab = "OBP", main = "Clustered OPS")
+points(xvar[ci2], yvar[ci2], col = "yellow")
+points(xvar[ci3], yvar[ci3], col = "orange")
+points(xvar[ci4], yvar[ci4], col = "red")
+points(xvar[ci5], yvar[ci5], col = "blue")
+
+
+findAverageByAgeClustered = function(stat, ages, startAge=20, endAge=40)
+{
+  total = mean(stat[ages == startAge], na.rm = TRUE)
+  for (i in (startAge+1):endAge) 
+  {
+    total = c(total,mean(stat[ages == i], na.rm = TRUE))
+  }
+  return(total)
+}
+
+#Apply poly regression to average OPS by age
+avgCluster1 = findAverageByAgeClustered(OPS[ci1], age[ci1])
+
 minPlayerAB = 500
 
 AB = GetValidData(batters$AB)
